@@ -1,0 +1,35 @@
+name: masterへのPRをマージした際に自動でリリースタグをつける
+on:
+  pull_request:
+    branches:
+      - master
+    types: [closed]
+jobs:
+  release:
+    name: add release tag
+    runs-on: ubuntu-latest
+    # PRがmergeされてcloseした時だけ動作する
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: add tag
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          # tagの名前はPRのタイトルになる
+          # v.X.X.Xの形式でPRタイトルをつけること
+          TAG: ${{github.event.pull_request.title}}
+          REPO: ${{github.repository}}
+          COMMIT: ${{github.sha}}
+        run: ./.github/scripts/addReleaseTag.sh
+      - name: create release draft
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          tag_name: ${{github.event.pull_request.title}}
+          release_name: release draft(${{github.event.pull_request.title}})
+          body: |
+            ここにリリース内容を記載してください
+          draft: true
+          prerelease: true
+
