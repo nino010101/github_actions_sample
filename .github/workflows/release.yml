@@ -25,6 +25,7 @@ jobs:
       - name: create release draft
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        uses: actions/create-release@v1
         with:
           tag_name: ${{github.event.pull_request.title}}
           release_name: release draft(${{github.event.pull_request.title}})
